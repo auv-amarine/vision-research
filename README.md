@@ -1,5 +1,5 @@
 <div align="center">
-<img width="1200" height="275" alt="PPBanner" src="public/assets/PASTI PINTAR BANNER.jpg" />
+<img width="1200" height="275" alt="PPBanner" src="assets/banner.png" />
 </div>
 
 # Vision Research
