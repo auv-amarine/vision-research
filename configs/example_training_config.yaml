@@ -1,0 +1,79 @@
+#training Configuration for YOLO Object Detection example
+# this config is used by scripts/train.sh and src/training/train.py
+
+model:
+  weights: "yolov8n.pt"
+  variant: "yolov8n"
+
+data:
+  #yaml only
+  yaml_path: "data/dataset.yaml"  
+  num_classes: 10
+
+training:
+  epochs: 100
+  batch_size: 16
+  image_size: 640
+  patience: 50  
+  optimizer: "auto"  
+  lr0: 0.01  
+  lrf: 0.01  
+  momentum: 0.937  
+  weight_decay: 0.0005  
+  
+  #augmentation params
+  hsv_h: 0.015  
+  hsv_s: 0.7    
+  hsv_v: 0.4    
+  degrees: 0.0  
+  translate: 0.1  
+  scale: 0.5    
+  shear: 0.0    
+  perspective: 0.0  
+  flipud: 0.0   
+  fliplr: 0.5   
+  mosaic: 1.0   
+  mixup: 0.0    
+  copy_paste: 0.0  
+
+device:
+  gpu_ids: "0"  
+  workers: 8    
+
+output:
+  # save_period = -1 means disabled save checkpoints during training
+  project: "experiments/runs"
+  name: "train"  
+  exist_ok: false  
+  save: true       
+  save_period: -1  
+  plots: true      
+  verbose: true    
+
+validation:
+  val: true        
+  split: "val"     
+  save_json: false 
+  save_hybrid: false 
+
+advanced:
+  # profile parameter in advance for settings ONNX or TensorRT training
+  cache: false     
+  rect: false      
+  resume: false    
+  amp: true        
+  fraction: 1.0    
+  profile: false   
+  freeze: null     
+  multi_scale: false  
+  overlap_mask: true  
+  mask_ratio: 4    
+  dropout: 0.0     
+  val_period: 1    
+
+logging:
+  wandb:
+    enabled: false
+    project: "vision-research"
+    entity: "auv-amarine"
+    name: null  
