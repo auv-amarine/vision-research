@@ -1,0 +1,48 @@
+
+name: yolov11-aur-rpi5
+
+# TRAINING PARAMETER
+epochs: 30
+batch: 8
+imgsz: 512
+
+# OPTIMIZER
+optimizer: AdamW
+lr0: 0.001
+momentum: 0.9
+weight_decay: 0.0005
+
+# DATA LOADING
+workers: 4
+cache: false
+
+# AUGMENTATION (UNDERWATER – MODERATE)
+hsv_h: 0.01
+hsv_s: 0.4
+hsv_v: 0.3
+
+degrees: 0.0
+translate: 0.02
+scale: 0.15
+shear: 0.0
+perspective: 0.0
+
+flipud: 0.0
+fliplr: 0.3
+
+mosaic: 0.2
+mixup: 0.0
+copy_paste: 0.0
+
+# REGULARIZATION
+label_smoothing: 0.0
+
+# VALIDATION & OUTPUT
+val: true
+save: true
+save_period: -1
+plots: true
+
+# REPRODUCIBILITY
+seed: 42
+deterministic: true

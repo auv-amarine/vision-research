@@ -1,0 +1,48 @@
+name: auv-yolov11n-embedded
+
+# TRAINING PARAMETER
+epochs: 50         
+batch: 8          
+imgsz: 512          
+patience: 40
+
+# OPTIMIZER
+optimizer: AdamW
+lr0: 0.0005         
+momentum: 0.9
+weight_decay: 0.01
+
+# DATA LOADING
+workers: 4         
+cache: false
+
+# AUGMENTATION (UNDERWATER-AWARE)
+hsv_h: 0.015
+hsv_s: 0.6          # underwater color distortion tinggi
+hsv_v: 0.4
+
+degrees: 0.0
+translate: 0.03     # gerakan AUV lambat
+scale: 0.2
+shear: 0.0
+perspective: 0.0
+
+flipud: 0.0
+fliplr: 0.3        
+
+mosaic: 0.3        
+mixup: 0.0
+copy_paste: 0.0
+
+# REGULARIZATION
+label_smoothing: 0.05  
+
+# VALIDATION & OUTPUT
+val: true
+save: true
+save_period: -1
+plots: true
+
+# REPRODUCIBILITY
+seed: 42
+deterministic: true

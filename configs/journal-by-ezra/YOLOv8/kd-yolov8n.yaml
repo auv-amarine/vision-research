@@ -1,0 +1,51 @@
+# YOLOv8 TRAINING CONFIG (EDGE-ORIENTED, KD-INSPIRED)
+
+name: kd-yolov8n
+
+# TRAINING PARAMETER (AKTIF)
+epochs: 50
+batch: 16
+imgsz: 640
+patience: 30
+
+# OPTIMIZER (AKTIF)
+optimizer: AdamW
+lr0: 0.001
+momentum: 0.9
+weight_decay: 0.01
+
+# DATA LOADING (AKTIF)
+workers: 8
+cache: false
+
+# AUGMENTATION (AKTIF)
+hsv_h: 0.01
+hsv_s: 0.5
+hsv_v: 0.3
+
+degrees: 0.0
+translate: 0.05
+scale: 0.3
+shear: 0.0
+perspective: 0.0
+
+flipud: 0.0
+fliplr: 0.5
+
+mosaic: 0.5
+mixup: 0.0
+copy_paste: 0.0
+
+# REGULARIZATION (AKTIF)
+label_smoothing: 0.1
+
+# VALIDATION & OUTPUT (AKTIF)
+val: true
+save: true
+save_period: -1
+plots: true
+
+# REPRODUCIBILITY (AKTIF)
+seed: 42
+deterministic: true
+
