@@ -1,79 +1,93 @@
-#training Configuration for YOLO Object Detection example
-# this config is used by scripts/train.sh and src/training/train.py
+# YOLOv8 TRAINING CONFIG (ARTICLE-ALIGNED)
+# Compatible with src/training/train.py nested structure
 
 model:
   weights: "yolov8n.pt"
   variant: "yolov8n"
 
 data:
-  #yaml only
-  yaml_path: "data/dataset.yaml"  
+  yaml_path: "data/dataset.yaml"
   num_classes: 10
 
 training:
   epochs: 100
-  batch_size: 16
-  image_size: 640
-  patience: 50  
-  optimizer: "auto"  
-  lr0: 0.01  
-  lrf: 0.01  
-  momentum: 0.937  
-  weight_decay: 0.0005  
-  
-  #augmentation params
-  hsv_h: 0.015  
-  hsv_s: 0.7    
-  hsv_v: 0.4    
-  degrees: 0.0  
-  translate: 0.1  
-  scale: 0.5    
-  shear: 0.0    
-  perspective: 0.0  
-  flipud: 0.0   
-  fliplr: 0.5   
-  mosaic: 1.0   
-  mixup: 0.0    
-  copy_paste: 0.0  
+  batch_size: -1          # -1 = auto batch
+  image_size: 512
+  patience: 20
+  optimizer: "AdamW"
+  lr0: 0.001
+  lrf: 0.01               # final learning rate factor (default YOLO)
+  momentum: 0.9
+  weight_decay: 0.0005
+  # Augmentation (Underwater – Moderate)
+  hsv_h: 0.01
+  hsv_s: 0.4
+  hsv_v: 0.3
+  degrees: 0.0
+  translate: 0.02
+  scale: 0.15
+  shear: 0.0
+  perspective: 0.0
+  flipud: 0.0
+  fliplr: 0.3
+  mosaic: 0.2
+  mixup: 0.0
+  copy_paste: 0.0
+  label_smoothing: 0.0
 
 device:
-  gpu_ids: "0"  
-  workers: 8    
+  gpu_ids: "0"
+  workers: 4
 
 output:
-  # save_period = -1 means disabled save checkpoints during training
   project: "experiments/runs"
-  name: "train"  
-  exist_ok: false  
-  save: true       
-  save_period: -1  
-  plots: true      
-  verbose: true    
+  name: "yolov8-aur-rpi5"
+  exist_ok: false
+  save: true
+  save_period: -1         # -1 = disable intermediate checkpoints
+  plots: true
+  verbose: true
 
 validation:
-  val: true        
-  split: "val"     
-  save_json: false 
-  save_hybrid: false 
+  val: true
+  split: "val"
+  save_json: false
+  save_hybrid: false
 
 advanced:
-  # profile parameter in advance for settings ONNX or TensorRT training
-  cache: false     
-  rect: false      
-  resume: false    
-  amp: true        
-  fraction: 1.0    
-  profile: false   
-  freeze: null     
-  multi_scale: false  
-  overlap_mask: true  
-  mask_ratio: 4    
-  dropout: 0.0     
-  val_period: 1    
+  cache: false
+  rect: false
+  resume: false
+  amp: true               # Automatic Mixed Precision
+  fraction: 1.0
+  profile: false
+  freeze: null
+  multi_scale: false
+  overlap_mask: true
+  mask_ratio: 4
+  dropout: 0.0
+  val_period: 1
+  seed: 42
+  deterministic: true
 
 logging:
   wandb:
-    enabled: false
-    project: "vision-research"
-    entity: "auv-amarine"
-    name: null  
+    enabled: true
+    project: "yolov8-qualification-real"
+    entity: "visionAmarine"
+    name: null            # null = use output.name
+
+sweep:
+  method: "random"
+  metric:
+    name: "metrics/mAP50-95(B)"
+    goal: "maximize"
+  parameters:
+    lr0:
+      distribution: "uniform"
+      min: 0.001
+      max: 0.1
+    batch_size:
+      values: [8, 16, 32]
+    image_size:
+      values: [416, 512, 640]
