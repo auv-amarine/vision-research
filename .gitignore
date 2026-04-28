@@ -113,3 +113,6 @@ dmypy.json
 
 # _SETUP
 *_SETUP.md
+
+#hidden
+configs/training_config.yaml
