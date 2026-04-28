@@ -1,0 +1,48 @@
+name: yolov8-auv-vision-tracking
+
+# TRAINING PARAMETER
+epochs: 40            
+batch: 4            
+imgsz: 416               
+patience: 25
+
+# OPTIMIZER
+optimizer: AdamW
+lr0: 0.0005             
+momentum: 0.9
+weight_decay: 0.0003
+
+# DATA LOADING
+workers: 2              
+cache: false
+
+# AUGMENTATION 
+hsv_h: 0.02       
+hsv_s: 0.5         
+hsv_v: 0.4               
+
+degrees: 0.0 
+translate: 0.03   
+scale: 0.2         
+shear: 0.0
+perspective: 0.0        
+
+flipud: 0.0          
+fliplr: 0.5          
+
+mosaic: 0.15              
+mixup: 0.0               
+copy_paste: 0.0
+
+# REGULARIZATION
+label_smoothing: 0.05    
+
+# VALIDATION & OUTPUT
+val: true
+save: true
+save_period: -1
+plots: true
+
+# REPRODUCIBILITY
+seed: 42
+deterministic: true

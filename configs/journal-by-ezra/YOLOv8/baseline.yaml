@@ -1,0 +1,51 @@
+# ===============================
+# BASELINE CONFIG (NO TUNING)
+# ===============================
+
+# name run
+name: baseline-YOLOv8
+
+# Training
+epochs: 20
+batch: 16
+imgsz: 640
+patience: 20
+
+# Optimizer
+optimizer: SGD
+lr0: 0.01
+momentum: 0.937
+weight_decay: 0.0005
+
+# Data loading
+workers: 8
+cache: false
+
+# Augmentation (DEFAULT YOLO)
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+shear: 0.0
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.5
+
+mosaic: 1.0
+mixup: 0.0
+copy_paste: 0.0
+
+# Regularization
+label_smoothing: 0.0
+
+# Validation
+val: true
+save: true
+save_period: -1
+plots: true
+
+# Seed (reproducible)
+seed: 42
+deterministic: true

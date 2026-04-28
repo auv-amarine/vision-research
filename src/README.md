@@ -36,6 +36,14 @@ src/
 │   ├── logger.py     # Logging utilities
 │   └── config.py     # Configuration parsing
 │
+├── dataset/          # For images training
+│   ├── data          # Data yaml
+|     └── data.yaml   # for training data form yaml document
+│   └── roboflow1-by-ezra # Folder training from one person form this group 
+|      ├── test
+|      ├── train
+|      └─ valid
+│
 └── inference/         # Inference and deployment
     ├── detect.py      # Object detection inference
     ├── tracker.py     # Object tracking
