@@ -284,24 +284,10 @@ def train_yolo(config: Dict[str, Any]):
     print(f"Loading model: {config['model']['weights']}")
     model = YOLO(config["model"]["weights"])
 
-    # --- Attach W&B Ultralytics Callback ---
-    # This replaces manual wandb.log() calls and uses YOLO's native W&B integration
-    if wandb_enabled and add_wandb_callback:
-        try:
-            # Workaround for NameError: RANK not defined in some wandb versions
-            try:
-                from ultralytics.utils.dist import RANK
-                import wandb.integration.ultralytics.callback as _wb_cb
-
-                if not hasattr(_wb_cb, "RANK"):
-                    _wb_cb.RANK = RANK
-            except Exception:
-                pass
-            add_wandb_callback(model, enable_model_checkpointing=True)
-            print("W&B callback attached to YOLO (enable_model_checkpointing=True)\n")
-        except Exception as e:
-            print(f"WARNING: Failed to attach W&B callback: {e}")
-            print("Continuing training without W&B callback. Metrics may still be logged via wandb.init.\n")
+    # --- Attach official W&B callback for full metrics & media tracking ---
+    if wandb_enabled and WANDB_AVAILABLE and add_wandb_callback is not None:
+        add_wandb_callback(model, enable_model_checkpoints=False)
+        print("Official W&B Ultralytics callback attached (full metrics + media tracking)\n")
 
     # --- Build Training Arguments ---
     train_args = build_train_args(config)
