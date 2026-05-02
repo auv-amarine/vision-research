@@ -284,10 +284,88 @@ def train_yolo(config: Dict[str, Any]):
     print(f"Loading model: {config['model']['weights']}")
     model = YOLO(config["model"]["weights"])
 
-    # --- Attach official W&B callback for full metrics & media tracking ---
-    if wandb_enabled and WANDB_AVAILABLE and add_wandb_callback is not None:
-        add_wandb_callback(model, enable_model_checkpoints=False)
-        print("Official W&B Ultralytics callback attached (full metrics + media tracking)\n")
+    # --- Attach W&B callbacks for real-time logging ---
+    if wandb_enabled and WANDB_AVAILABLE:
+        # Try official callback first; fallback to custom if buggy/missing
+        try:
+            if add_wandb_callback is not None:
+                # Fix: monkey-patch missing RANK variable in wandb callback module
+                # (see https://github.com/ultralytics/ultralytics/issues/23180)
+                try:
+                    from ultralytics.utils import RANK as _RANK
+                    import wandb.integration.ultralytics.callback as _wandb_cb_mod
+                    if not hasattr(_wandb_cb_mod, "RANK"):
+                        _wandb_cb_mod.RANK = _RANK
+                except Exception:
+                    pass
+                # Guard against buggy wandb callback versions that crash on validation
+                # (e.g. NameError: plot_detection_validation_results is not defined)
+                if not hasattr(_wandb_cb_mod, "plot_detection_validation_results"):
+                    raise RuntimeError(
+                        "wandb ultralytics callback is buggy: plot_detection_validation_results missing"
+                    )
+                add_wandb_callback(model)
+                print("Official W&B Ultralytics callback attached (full metrics + media tracking)\n")
+            else:
+                raise ImportError("add_wandb_callback not available")
+        except Exception as _e:
+            print(f"  Warning: Official W&B callback failed ({_e}). Using custom fallback.\n")
+
+            def _wandb_on_train_epoch_end(trainer):
+                if not (wandb and wandb.run):
+                    return
+                try:
+                    metrics = {}
+                    if hasattr(trainer, "loss_items") and trainer.loss_items is not None:
+                        li = trainer.loss_items
+                        if hasattr(li, "cpu"):
+                            li = li.cpu().numpy()
+                        li = list(li) if hasattr(li, "__iter__") else [li]
+                        names = ["box_loss", "cls_loss", "dfl_loss"]
+                        for i, v in enumerate(li):
+                            if i < len(names):
+                                metrics[f"train/{names[i]}"] = float(v)
+                    if hasattr(trainer, "lr"):
+                        metrics["train/lr"] = float(trainer.lr)
+                    if metrics:
+                        wandb.log(metrics, step=trainer.epoch + 1)
+                except Exception:
+                    pass
+
+            def _wandb_on_fit_epoch_end(trainer):
+                if not (wandb and wandb.run):
+                    return
+                try:
+                    metrics = {}
+                    if hasattr(trainer, "metrics") and trainer.metrics:
+                        for k, v in trainer.metrics.items():
+                            metrics[f"metrics/{k}"] = float(v)
+                    if hasattr(trainer, "fitness"):
+                        metrics["metrics/fitness"] = float(trainer.fitness)
+                    if metrics:
+                        wandb.log(metrics, step=trainer.epoch + 1)
+                except Exception:
+                    pass
+
+            def _wandb_on_model_save(trainer):
+                if not (wandb and wandb.run):
+                    return
+                try:
+                    ckpt = Path(trainer.last)
+                    if ckpt.exists():
+                        art = wandb.Artifact(
+                            name=f"{wandb.run.name or wandb.run.id}-checkpoint",
+                            type="model",
+                        )
+                        art.add_file(str(ckpt))
+                        wandb.log_artifact(art, aliases=["latest"])
+                except Exception:
+                    pass
+
+            model.add_callback("on_train_epoch_end", _wandb_on_train_epoch_end)
+            model.add_callback("on_fit_epoch_end", _wandb_on_fit_epoch_end)
+            model.add_callback("on_model_save", _wandb_on_model_save)
+            print("Custom W&B fallback callbacks attached to YOLO\n")
 
     # --- Build Training Arguments ---
     train_args = build_train_args(config)
@@ -440,8 +518,13 @@ Examples:
         )
         print(f"Sweep ID: {sweep_id}\n")
 
+        sweep_run_counter = [0]
+
         def sweep_train():
             """Function executed by each W&B sweep agent."""
+            sweep_run_counter[0] += 1
+            idx = sweep_run_counter[0]
+
             cfg = load_config(args.config)
             cfg = merge_args_with_config(cfg, args)
             # Force-enable W&B for sweep runs
@@ -451,6 +534,15 @@ Examples:
             cfg["logging"]["wandb"]["project"] = wandb_project
             if wandb_entity:
                 cfg["logging"]["wandb"]["entity"] = wandb_entity
+
+            # Set indexed run name for sweep
+            base_name = (
+                cfg["logging"]["wandb"].get("name")
+                or cfg["output"].get("name")
+                or "sweep-run"
+            )
+            cfg["logging"]["wandb"]["name"] = f"{base_name}-{idx}"
+
             train_yolo(cfg)
 
         wandb.agent(sweep_id, function=sweep_train, count=args.sweep_count)
